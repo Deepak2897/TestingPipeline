@@ -1,0 +1,10 @@
+<suite name="AdactinSuite">
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+    </listeners>
+    <test name="AdactinTests">
+        <classes>
+            <class name="tests.AdactinTest"/>
+        </classes>
+    </test>
+</suite>
