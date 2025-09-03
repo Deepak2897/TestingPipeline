@@ -2,6 +2,14 @@ trigger:
 - main
 - testingbranch
 
+schedules:
+- cron: "30 0 * * *"
+  displayName: "Daily build at 6 AM IST"
+  branches:
+    include:
+    - main
+    - testingbranch
+  always: true
 
 pool:
   vmImage: 'ubuntu-latest'
