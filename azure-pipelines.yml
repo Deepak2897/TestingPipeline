@@ -1,32 +1,38 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
 # ✅ Update apt-get
 - script: sudo apt-get update
   displayName: 'Update apt-get'
 
-# ✅ Install Chrome
-- script: sudo apt-get install -y google-chrome-stable
+# ✅ Install latest Google Chrome
+- script: |
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+    sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+    sudo apt-get update
+    sudo apt-get install -y google-chrome-stable
+    google-chrome --version
   displayName: 'Install Google Chrome'
 
-# ✅ Install ChromeDriver (matching version)
+# ✅ Install matching ChromeDriver dynamically
 - script: |
-    CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
-    wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
-    unzip chromedriver_linux64.zip
-    sudo mv chromedriver /usr/local/bin/
-  displayName: 'Install ChromeDriver'
+    CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1 | cut -d. -f1)
+    echo "Detected Chrome major version: $CHROME_VERSION"
 
-# ✅ Check Java
+    CHROMEDRIVER_VERSION=$(curl -sS "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_VERSION")
+    echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
+
+    wget https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip
+    unzip chromedriver-linux64.zip
+    sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+    chromedriver --version
+  displayName: 'Install matching ChromeDriver'
+
+# ✅ Check Java version
 - script: java -version
   displayName: 'Check Java Version'
 
@@ -41,4 +47,3 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
     goals: 'clean test'
-
