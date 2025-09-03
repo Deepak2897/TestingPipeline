@@ -2,6 +2,7 @@ package base;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -20,14 +21,21 @@ public class BaseClass {
     public static com.aventstack.extentreports.ExtentReports extent;
     public static com.aventstack.extentreports.ExtentTest test;
 
-    // Launch browser
+ // Launch browser
     public WebDriver launchBrowser(String url) {
-    	WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless"); // run without UI
+        options.addArguments("--no-sandbox"); // required in CI
+        options.addArguments("--disable-dev-shm-usage"); // avoid memory issues
+        options.addArguments("--disable-gpu"); // optional, extra safety
+        options.addArguments("--remote-allow-origins=*"); // Selenium 4.21+ compatibility
+
+        driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         driver.get(url);
         return driver;
     }
+
 
     // Close browser
     public void closeBrowser() {
