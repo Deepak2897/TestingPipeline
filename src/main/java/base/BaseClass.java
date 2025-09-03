@@ -56,7 +56,7 @@ public class BaseClass {
     public void selectByVisibleText(WebElement element, String text) {
         new Select(element).selectByVisibleText(text);
     }
- // Wait until element is visible
+    // Wait until element is visible
     public WebElement waitForVisibility(WebElement element, int timeInSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeInSeconds));
         return wait.until(ExpectedConditions.visibilityOf(element));
@@ -67,8 +67,8 @@ public class BaseClass {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeInSeconds));
         return wait.until(ExpectedConditions.elementToBeClickable(element));
     }
-    //take screenshot
-   
+    
+    //Take Screenshot
         public String takeScreenshot(String testName) {
             TakesScreenshot ts = (TakesScreenshot) driver;
             File src = ts.getScreenshotAs(OutputType.FILE);
