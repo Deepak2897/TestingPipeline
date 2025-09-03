@@ -1,0 +1,44 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+# ✅ Update apt-get
+- script: sudo apt-get update
+  displayName: 'Update apt-get'
+
+# ✅ Install Chrome
+- script: sudo apt-get install -y google-chrome-stable
+  displayName: 'Install Google Chrome'
+
+# ✅ Install ChromeDriver (matching version)
+- script: |
+    CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
+    wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
+    unzip chromedriver_linux64.zip
+    sudo mv chromedriver /usr/local/bin/
+  displayName: 'Install ChromeDriver'
+
+# ✅ Check Java
+- script: java -version
+  displayName: 'Check Java Version'
+
+# ✅ Run Maven Build + Tests
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '11'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
+    goals: 'clean test'
+
