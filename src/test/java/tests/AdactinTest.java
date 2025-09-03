@@ -28,12 +28,14 @@ public class AdactinTest extends BaseClass {
         bookingPage.searchHotel("Sydney", "Hotel Creek", "Standard", "1 - One");
 
         paymentPage = new PaymentPage(driver);
-        paymentPage.enterPaymentDetails("John", "Doe", "123 Street, Sydney",
+        paymentPage.enterPaymentDetails("Deepak", "k", "123 Street, Sydney",
                                         "4111111111111111", "VISA", "January", "2026", "123");
+        
 
         confirmationPage = new ConfirmationPage(driver);
         String orderNo = confirmationPage.getOrderNumber();
         System.out.println("Booking ID: " + orderNo);
+        
 
         confirmationPage.clickLogout();
     }

@@ -19,6 +19,7 @@ public class ConfirmationPage extends BaseClass {
 
     public String getOrderNumber()  { 
     	
+        WebElement orderElement = waitForVisibility(txtOrderNo, 10); // wait up to 10s
     	return txtOrderNo.getAttribute("value"); 
     	}
     
