@@ -3,6 +3,9 @@ package base;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.Select;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -15,6 +18,7 @@ public class BaseClass {
 
     // Launch browser
     public WebDriver launchBrowser(String url) {
+    	WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
         driver.manage().window().maximize();
         driver.get(url);
@@ -42,22 +46,29 @@ public class BaseClass {
     }
 
     //take screenshot
-    public String takeScreenshot(String testName) {
-        TakesScreenshot ts = (TakesScreenshot) driver;
-        File src = ts.getScreenshotAs(OutputType.FILE);
+   
+        public String takeScreenshot(String testName) {
+            TakesScreenshot ts = (TakesScreenshot) driver;
+            File src = ts.getScreenshotAs(OutputType.FILE);
 
-        // Add timestamp for uniqueness
-        String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
-        String path = System.getProperty("user.dir") + "/test-output/screenshots/" 
-                      + testName + "_" + timestamp + ".png";
+            String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+            String path = System.getProperty("user.dir") + "/test-output/screenshots/" + testName + "_" + timestamp + ".png";
 
-        File dest = new File(path);
-        try {
-            FileUtils.copyFile(src, dest);
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Create the directory if it does not exist
+            File screenshotDir = new File(System.getProperty("user.dir") + "/test-output/screenshots/");
+            if (!screenshotDir.exists()) {
+                screenshotDir.mkdirs();
+            }
+
+            File dest = new File(path);
+            try {
+                FileUtils.copyFile(src, dest);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return path;
         }
-        return path;
+
     }
 
-}
+
