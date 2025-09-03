@@ -1,5 +1,6 @@
 package tests;
 
+import org.testng.Assert;
 import org.testng.annotations.*;
 import base.BaseClass;
 import pages.LoginPage;
@@ -28,17 +29,19 @@ public class AdactinTest extends BaseClass {
         bookingPage.searchHotel("Sydney", "Hotel Creek", "Standard", "1 - One");
 
         paymentPage = new PaymentPage(driver);
-        paymentPage.enterPaymentDetails("Deepak", "k", "123 Street, Sydney",
+        paymentPage.enterPaymentDetails("Johnny", "Doe", "123 Street, Sydney",
                                         "4111111111111111", "VISA", "January", "2026", "123");
-        
 
         confirmationPage = new ConfirmationPage(driver);
         String orderNo = confirmationPage.getOrderNumber();
+
+        // ✅ Extra safety
+        Assert.assertNotNull(orderNo, "Order number should not be null");
         System.out.println("Booking ID: " + orderNo);
-        
 
         confirmationPage.clickLogout();
     }
+
 
     @AfterClass
     public void tearDown() { closeBrowser(); }
