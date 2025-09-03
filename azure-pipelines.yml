@@ -1,5 +1,5 @@
 trigger:
-- main
+- testingbranch
 
 pool:
   vmImage: 'ubuntu-latest'
