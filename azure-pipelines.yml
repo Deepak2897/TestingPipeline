@@ -10,8 +10,27 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+# ✅ Update apt-get
+- script: sudo apt-get update
+  displayName: 'Update apt-get'
+
+# ✅ Install Chrome
+- script: sudo apt-get install -y google-chrome-stable
+  displayName: 'Install Google Chrome'
+
+# ✅ Install ChromeDriver (matching version)
+- script: |
+    CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
+    wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
+    unzip chromedriver_linux64.zip
+    sudo mv chromedriver /usr/local/bin/
+  displayName: 'Install ChromeDriver'
+
+# ✅ Check Java
 - script: java -version
   displayName: 'Check Java Version'
+
+# ✅ Run Maven Build + Tests
 - task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
@@ -22,3 +41,4 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
     goals: 'clean test'
+
