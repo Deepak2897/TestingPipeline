@@ -40,6 +40,7 @@ public class AdactinTest extends BaseClass {
         System.out.println("Booking ID: " + orderNo);
 
         confirmationPage.clickLogout();
+        
     }
 
 
