@@ -20,20 +20,20 @@ public class PaymentPage extends BaseClass {
 
     public PaymentPage(WebDriver driver)  {
     	
-    	PageFactory.initElements(driver, this);
+    	PageFactory.initElements(getDriver(), this);
     }
 
     public void enterPaymentDetails(String fname, String lname, String address,
                                     String ccNo, String ccType, String expMonth,
                                     String expYear, String cvv) {
-        enterText(txtFirstName, fname);
-        enterText(txtLastName, lname);
-        enterText(txtAddress, address);
-        enterText(txtCCNum, ccNo);
-        selectByVisibleText(dropdownCCType, ccType);
-        selectByVisibleText(dropdownExpMonth, expMonth);
-        selectByVisibleText(dropdownExpYear, expYear);
-        enterText(txtCVV, cvv);
-        clickElement(btnBookNow);
+        enterData(txtFirstName, fname);
+        enterData(txtLastName, lname);
+        enterData(txtAddress, address);
+        enterData(txtCCNum, ccNo);
+        selectByVisibilityText(dropdownCCType, ccType);
+        selectByVisibilityText(dropdownExpMonth, expMonth);
+        selectByVisibilityText(dropdownExpYear, expYear);
+        enterData(txtCVV, cvv);
+        waitForClickable(btnBookNow).click();; 
     }
 }

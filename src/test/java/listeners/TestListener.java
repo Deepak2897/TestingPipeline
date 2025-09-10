@@ -5,40 +5,45 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 import base.BaseClass;
 import reports.ExtentManager;
+import utils.ScreenshotUtil;
+
 import com.aventstack.extentreports.Status;
 
-public class TestListener extends BaseClass implements ITestListener {
+public class TestListener implements ITestListener {
 
-    @Override
+	@Override
     public void onStart(ITestContext context) {
-        extent = ExtentManager.getExtentReports();
+        System.out.println("[TestListener] onStart: " + context.getName());
     }
 
     @Override
     public void onFinish(ITestContext context) {
-        extent.flush();
+        System.out.println("[TestListener] onFinish: " + context.getName());
     }
 
     @Override
     public void onTestStart(ITestResult result) {
-        test = extent.createTest(result.getMethod().getMethodName());
-        test.log(Status.INFO, "Test Started: " + result.getMethod().getMethodName());
+        System.out.println("[TestListener] onTestStart: " + result.getName());
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        test.log(Status.PASS, "Test Passed");
+        System.out.println("[TestListener] onTestSuccess: " + result.getName());
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        String path = takeScreenshot(result.getMethod().getMethodName());
-        try { test.addScreenCaptureFromPath(path); } catch (Exception e) { e.printStackTrace(); }
-        test.log(Status.FAIL, result.getThrowable());
+        System.out.println("[TestListener] onTestFailure: " + result.getName());
+        // optionally call screenshot util but guarded to avoid NPEs
+        try {
+            ScreenshotUtil.takeScreenshotStatic(result.getName());
+        } catch (Exception e) {
+            System.out.println("[TestListener] screenshot failed: " + e.getMessage());
+        }
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        test.log(Status.SKIP, "Test Skipped");
+        System.out.println("[TestListener] onTestSkipped: " + result.getName());
     }
 }

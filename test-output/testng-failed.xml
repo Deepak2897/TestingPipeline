@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="Failed suite [AdactinSuite]">
+<suite name="Failed suite [Suite]" guice-stage="DEVELOPMENT">
   <listeners>
     <listener class-name="listeners.TestListener"/>
   </listeners>
-  <test thread-count="5" name="AdactinTests(failed)">
+  <test thread-count="5" name="DataDrivenTests(failed)">
     <classes>
       <class name="tests.AdactinTest">
         <methods>
           <include name="tearDown"/>
           <include name="setup"/>
-          <include name="bookHotelTest"/>
+          <include name="logoutSuccessfully"/>
+          <include name="confirmbookingpage"/>
+          <include name="bookingpagedetails"/>
+          <include name="logincreds"/>
         </methods>
       </class> <!-- tests.AdactinTest -->
     </classes>
-  </test> <!-- AdactinTests(failed) -->
-</suite> <!-- Failed suite [AdactinSuite] -->
+  </test> <!-- DataDrivenTests(failed) -->
+</suite> <!-- Failed suite [Suite] -->
