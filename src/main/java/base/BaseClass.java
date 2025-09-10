@@ -1,11 +1,13 @@
 package base;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,8 +15,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.*;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -31,13 +36,14 @@ public class BaseClass {
     public static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     public static Properties config = new Properties();
 
-    // store temp Chrome profile path for cleanup
+    // per-thread temp chrome profile path (for cleanup)
     private static ThreadLocal<Path> tempProfilePath = new ThreadLocal<>();
 
-    // Load config.properties once
+    // Load config.properties once (from classpath - CI friendly; fallback to src/test/resources)
     static {
         try (InputStream in = BaseClass.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (in == null) {
+                // fallback to file path for developer convenience
                 String fallback = "src/test/resources/config.properties";
                 try (InputStream fin = Files.newInputStream(Path.of(fallback))) {
                     config.load(fin);
@@ -52,9 +58,7 @@ public class BaseClass {
                 try {
                     WebDriver wd = driver.get();
                     if (wd != null) {
-                        try {
-                            wd.quit();
-                        } catch (Exception ignored) {}
+                        try { wd.quit(); } catch (Exception ignored) {}
                         driver.remove();
                     }
                     cleanupProfileDir();
@@ -69,7 +73,7 @@ public class BaseClass {
 
     public static WebDriver getDriver() {
         WebDriver wd = driver.get();
-        if (wd == null) throw new IllegalStateException("WebDriver not initialized. Call launchBrowser() first.");
+        if (wd == null) throw new IllegalStateException("WebDriver has not been initialized. Call launchBrowser() first.");
         return wd;
     }
 
@@ -84,6 +88,7 @@ public class BaseClass {
         return config.getProperty(key, defaultVal);
     }
 
+    // Lazily evaluate default timeout (so config is already loaded)
     private long getDefaultTimeout() {
         return Long.parseLong(getConfig("explicitTimeoutSeconds", "15"));
     }
@@ -105,7 +110,7 @@ public class BaseClass {
             prefs.put("profile.password_manager_enabled", false);
             options.setExperimentalOption("prefs", prefs);
 
-            // Stability args
+            // Stability / CI-safe args
             options.addArguments("--disable-save-password-bubble");
             options.addArguments("--disable-notifications");
             options.addArguments("--no-sandbox");
@@ -114,28 +119,34 @@ public class BaseClass {
             options.addArguments("--disable-extensions");
             options.addArguments("--remote-allow-origins=*");
 
-            // === FIX: unique user-data-dir to avoid "profile in use" error ===
+            // Extra flags
+            options.addArguments("--no-first-run");
+            options.addArguments("--disable-background-networking");
+            options.addArguments("--disable-default-apps");
+            options.addArguments("--disable-translate");
+            options.addArguments("--disable-sync");
+            options.addArguments("--disable-background-timer-throttling");
+            options.addArguments("--disable-renderer-backgrounding");
+            options.addArguments("--remote-debugging-port=0");
+
+            // === Unique user-data-dir per run (avoid "profile in use" errors) ===
             try {
                 Path profileDir = Files.createTempDirectory("chrome-profile-" + UUID.randomUUID());
                 options.addArguments("--user-data-dir=" + profileDir.toAbsolutePath().toString());
-                options.addArguments("--no-first-run");
-                options.addArguments("--disable-background-networking");
-                options.addArguments("--disable-default-apps");
-                options.addArguments("--disable-translate");
-                options.addArguments("--disable-sync");
-                options.addArguments("--disable-background-timer-throttling");
-                options.addArguments("--disable-renderer-backgrounding");
                 tempProfilePath.set(profileDir);
                 System.out.println("[DEBUG] Using temp Chrome profile: " + profileDir);
             } catch (Exception e) {
                 System.err.println("[WARN] Could not create temp chrome profile dir: " + e.getMessage());
             }
 
-            if (headless) {
-                options.addArguments("--headless=new");
+            // Headless (can be forced via -Dheadless=true, or via env CI)
+            boolean ciHeadless = headless || System.getenv("CI") != null;
+            if (ciHeadless) {
+                options.addArguments("--headless=new"); // modern headless
                 System.out.println("[DEBUG] Headless enabled");
             }
 
+            // Remote vs Local
             if (runMode.equalsIgnoreCase("remote")) {
                 try {
                     driver.set(new RemoteWebDriver(new URL(gridUrl), options));
@@ -148,13 +159,17 @@ public class BaseClass {
 
         } else if (browser.equalsIgnoreCase("firefox")) {
             WebDriverManager.firefoxdriver().setup();
+            // You can add FirefoxOptions similarly if required
             driver.set(new FirefoxDriver());
         } else {
             throw new RuntimeException("Browser not supported: " + browser);
         }
 
+        // Implicit wait & window
         getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWait));
-        getDriver().manage().window().maximize();
+        try {
+            getDriver().manage().window().maximize();
+        } catch (Exception ignored) {}
         getDriver().get(url);
     }
 
@@ -173,47 +188,60 @@ public class BaseClass {
         Path path = tempProfilePath.get();
         if (path != null) {
             try {
-                Files.walk(path)
-                     .sorted(Comparator.reverseOrder())
-                     .map(Path::toFile)
-                     .forEach(File::delete);
-                System.out.println("[DEBUG] Deleted temp Chrome profile: " + path);
+                if (Files.exists(path)) {
+                    Files.walk(path)
+                         .sorted(Comparator.reverseOrder())
+                         .forEach(p -> {
+                             try { Files.deleteIfExists(p); } catch (Exception ignored) {}
+                         });
+                }
             } catch (Exception ignored) {}
             tempProfilePath.remove();
         }
     }
 
-    // Utility methods
+    // Click element with wait + JS fallback
     public void clickElement(WebElement element) {
         waitForClickable(element);
         try {
             element.click();
         } catch (Exception e) {
-            ((JavascriptExecutor) getDriver()).executeScript("arguments[0].click();", element);
+            try {
+                ((JavascriptExecutor) getDriver()).executeScript("arguments[0].click();", element);
+            } catch (Exception ex) {
+                throw new RuntimeException("Unable to click element: " + ex.getMessage(), ex);
+            }
         }
     }
 
+    // Enter data with wait
     public void enterData(WebElement element, String text) {
         waitForVisible(element);
-        try { element.clear(); } catch (Exception ignored) {}
+        try {
+            element.clear();
+        } catch (Exception ignored) {}
         element.sendKeys(text);
     }
 
+    // Wait until element is visible
     public WebElement waitForVisible(WebElement element) {
         return new WebDriverWait(getDriver(), Duration.ofSeconds(getDefaultTimeout()))
                 .until(ExpectedConditions.visibilityOf(element));
     }
 
+    // Wait until element is clickable
     public WebElement waitForClickable(WebElement element) {
         return new WebDriverWait(getDriver(), Duration.ofSeconds(getDefaultTimeout()))
                 .until(ExpectedConditions.elementToBeClickable(element));
     }
 
+    // Dropdown select (keeps same method name as Sauce Demo / your pages)
     public void selectByVisibilityText(WebElement element, String text) {
         waitForVisible(element);
         new Select(element).selectByVisibleText(text);
     }
 
+    // Take Screenshot (Save inside target/ so CI can collect artifacts)
     public String takeScreenshot(String fileName) {
         File srcFile = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.FILE);
         String artifactsDir = System.getProperty("artifactsDir", getConfig("artifactsDir", "target/screenshots"));
@@ -221,22 +249,25 @@ public class BaseClass {
 
         try {
             Files.createDirectories(Path.of(artifactsDir));
-            FileUtils.copyFile(srcFile, new File(path));
+            Files.copy(srcFile.toPath(), Path.of(path), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return path;
     }
 
+    // Title
     public String getPageTitle() {
         return getDriver().getTitle();
     }
 
+    // Scroll
     public void scrollPage(WebElement element) {
-        ((JavascriptExecutor) getDriver())
-                .executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
+        JavascriptExecutor js = (JavascriptExecutor) getDriver();
+        js.executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
     }
 
+    // Scroll Top
     public void scrollToTop() {
         ((JavascriptExecutor) getDriver()).executeScript("window.scrollTo(0, 0)");
     }
