@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
+<testng-results ignored="0" total="4" passed="4" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-09-03T12:12:38 IST" name="Default suite" finished-at="2025-09-03T12:12:57 IST" duration-ms="18255">
+  <suite started-at="2025-09-10T17:39:07 IST" name="Suite" finished-at="2025-09-10T17:39:27 IST" duration-ms="20270">
     <groups>
     </groups>
-    <test started-at="2025-09-03T12:12:38 IST" name="Default test" finished-at="2025-09-03T12:12:57 IST" duration-ms="18255">
+    <test started-at="2025-09-10T17:39:07 IST" name="DataDrivenTests" finished-at="2025-09-10T17:39:27 IST" duration-ms="20270">
       <class name="tests.AdactinTest">
-        <test-method is-config="true" signature="setup()[pri:0, instance:tests.AdactinTest@79079097]" started-at="2025-09-03T12:12:38 IST" name="setup" finished-at="2025-09-03T12:12:43 IST" duration-ms="5027" status="PASS">
+        <test-method is-config="true" signature="setup()[pri:0, instance:tests.AdactinTest@7a8c8dcf]" started-at="2025-09-10T17:39:07 IST" name="setup" finished-at="2025-09-10T17:39:12 IST" duration-ms="5251" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setup -->
-        <test-method signature="bookHotelTest()[pri:0, instance:tests.AdactinTest@79079097]" started-at="2025-09-03T12:12:43 IST" name="bookHotelTest" finished-at="2025-09-03T12:12:56 IST" duration-ms="12819" status="PASS">
+        <test-method signature="logincreds()[pri:0, instance:tests.AdactinTest@7a8c8dcf]" started-at="2025-09-10T17:39:12 IST" name="logincreds" finished-at="2025-09-10T17:39:14 IST" duration-ms="1993" status="PASS">
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- bookHotelTest -->
-        <test-method is-config="true" signature="tearDown()[pri:0, instance:tests.AdactinTest@79079097]" started-at="2025-09-03T12:12:56 IST" name="tearDown" finished-at="2025-09-03T12:12:57 IST" duration-ms="291" status="PASS">
+        </test-method> <!-- logincreds -->
+        <test-method signature="bookingpagedetails()[pri:0, instance:tests.AdactinTest@7a8c8dcf]" started-at="2025-09-10T17:39:14 IST" name="bookingpagedetails" finished-at="2025-09-10T17:39:17 IST" depends-on-methods="tests.AdactinTest.logincreds" duration-ms="2581" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- bookingpagedetails -->
+        <test-method signature="confirmbookingpage()[pri:0, instance:tests.AdactinTest@7a8c8dcf]" started-at="2025-09-10T17:39:17 IST" name="confirmbookingpage" finished-at="2025-09-10T17:39:26 IST" depends-on-methods="tests.AdactinTest.bookingpagedetails" duration-ms="9353" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- confirmbookingpage -->
+        <test-method signature="logoutSuccessfully()[pri:0, instance:tests.AdactinTest@7a8c8dcf]" started-at="2025-09-10T17:39:26 IST" name="logoutSuccessfully" finished-at="2025-09-10T17:39:27 IST" depends-on-methods="tests.AdactinTest.confirmbookingpage" duration-ms="714" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- logoutSuccessfully -->
+        <test-method is-config="true" signature="tearDown()[pri:0, instance:tests.AdactinTest@7a8c8dcf]" started-at="2025-09-10T17:39:27 IST" name="tearDown" finished-at="2025-09-10T17:39:27 IST" duration-ms="299" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- tearDown -->
       </class> <!-- tests.AdactinTest -->
-    </test> <!-- Default test -->
-  </suite> <!-- Default suite -->
+    </test> <!-- DataDrivenTests -->
+  </suite> <!-- Suite -->
 </testng-results>

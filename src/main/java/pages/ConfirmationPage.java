@@ -12,20 +12,17 @@ import java.time.Duration;
 public class ConfirmationPage extends BaseClass {
 
     @FindBy(id = "order_no") private WebElement txtOrderNo;
-    @FindBy(id = "logout") private WebElement btnLogout;
 
     public ConfirmationPage(WebDriver driver) {
-        PageFactory.initElements(driver, this);
+        PageFactory.initElements(getDriver(), this);
     }
 
     public String getOrderNumber() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-        wait.until(ExpectedConditions.visibilityOf(txtOrderNo));
+        
+        waitForVisible(txtOrderNo);
 
         return txtOrderNo.getAttribute("value");
     }
 
-    public void clickLogout() {
-        clickElement(btnLogout);
-    }
+    
 }
