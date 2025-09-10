@@ -10,7 +10,6 @@ pr:
       - main
       # optionally include testingbranch if you want PR validation into testingbranch
 
-
 schedules:
 - cron: "30 0 * * *"
   displayName: "Daily build at 6 AM IST"
@@ -55,7 +54,7 @@ steps:
 - script: java -version
   displayName: 'Check Java Version'
 
-# ✅ Run Maven Build + Tests
+# ✅ Run Maven Build + Tests (headless mode forced)
 - task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
@@ -65,4 +64,4 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
-    goals: 'clean test'
+    goals: 'clean test -Dheadless=true'
