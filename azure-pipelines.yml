@@ -8,53 +8,58 @@ pr:
   branches:
     include:
       - main
-      # optionally include testingbranch if you want PR validation into testingbranch
+      # - testingbranch   # uncomment if you want PR validation into testingbranch
 
 schedules:
 - cron: "30 0 * * *"
   displayName: "Daily build at 6 AM IST"
   branches:
     include:
-    - main
-    - testingbranch
+      - main
+      - testingbranch
   always: true
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-# ✅ Update apt-get
+# update package list
 - script: sudo apt-get update
   displayName: 'Update apt-get'
 
-# ✅ Install latest Google Chrome
+# install required tools (wget, unzip)
+- script: sudo apt-get install -y wget unzip
+  displayName: 'Install wget & unzip'
+
+# Install Google Chrome
 - script: |
-    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-    sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-    sudo apt-get update
     sudo apt-get install -y google-chrome-stable
     google-chrome --version
   displayName: 'Install Google Chrome'
 
-# ✅ Install matching ChromeDriver dynamically
+# Install matching ChromeDriver dynamically (matches Chrome major version)
 - script: |
-    CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1 | cut -d. -f1)
-    echo "Detected Chrome major version: $CHROME_VERSION"
+    set -e
+    CHROME_VER=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1 | cut -d. -f1)
+    echo "Detected Chrome major version: $CHROME_VER"
 
-    CHROMEDRIVER_VERSION=$(curl -sS "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_VERSION")
+    CHROMEDRIVER_VERSION=$(curl -sS "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_VER")
     echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
 
-    wget https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip
-    unzip chromedriver-linux64.zip
+    URL="https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip"
+    echo "Downloading from: $URL"
+    wget -q "$URL" -O chromedriver-linux64.zip
+    unzip -q chromedriver-linux64.zip
     sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
-    chromedriver --version
+    sudo chmod +x /usr/local/bin/chromedriver
+    /usr/local/bin/chromedriver --version
   displayName: 'Install matching ChromeDriver'
 
-# ✅ Check Java version
+# Check Java
 - script: java -version
   displayName: 'Check Java Version'
 
-# ✅ Run Maven Build + Tests (headless mode forced)
+# Run Maven Build + Tests (headless mode forced for CI)
 - task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
@@ -66,4 +71,3 @@ steps:
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
     goals: 'clean test'
     options: '-Dheadless=true'
-
