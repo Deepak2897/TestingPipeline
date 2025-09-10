@@ -27,9 +27,11 @@ steps:
 - script: |
     CHROME_VER=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1 | cut -d. -f1)
     echo "Detected Chrome major version: $CHROME_VER"
+    
     CHROMEDRIVER_VERSION=$(curl -sS "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_VER")
     echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
-    wget -q "https://storage.googleapis.com/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip"
+    
+    wget -q "https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip"
     unzip -q chromedriver-linux64.zip
     sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
     /usr/local/bin/chromedriver --version
