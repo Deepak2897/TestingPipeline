@@ -1,6 +1,15 @@
 trigger:
-- main
-- testingbranch
+  branches:
+    include:
+      - main
+      - testingbranch
+
+pr:
+  branches:
+    include:
+      - main
+      # optionally include testingbranch if you want PR validation into testingbranch
+
 
 schedules:
 - cron: "30 0 * * *"
