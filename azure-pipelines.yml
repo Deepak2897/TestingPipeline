@@ -41,4 +41,6 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
     goals: 'clean test'
+    options: '-Dheadless=true'
+
 
