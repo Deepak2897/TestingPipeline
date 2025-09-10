@@ -9,21 +9,32 @@
     <packaging>jar</packaging>
 
     <properties>
-        <!-- ✅ Match with Azure Pipeline JDK (Java 11) -->
+        <!-- Java version -->
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Defaults you can override from CLI or CI -->
+        <maxRetry>1</maxRetry>
+        <artifactsDir>target/screenshots</artifactsDir>
     </properties>
 
     <dependencies>
-        <!-- ✅ WebDriver Manager -->
+        <!-- WebDriver Manager -->
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
             <version>6.2.0</version>
         </dependency>
 
-        <!-- ✅ Logging -->
+        <!-- Apache Commons IO (required by BaseClass.takeScreenshot) -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+
+        <!-- Logging -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -35,7 +46,7 @@
             <version>2.23.1</version>
         </dependency>
 
-        <!-- ✅ TestNG -->
+        <!-- TestNG (test scope) -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -43,14 +54,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- ✅ Extent Reports -->
+        <!-- Extent Reports -->
         <dependency>
             <groupId>com.aventstack</groupId>
             <artifactId>extentreports</artifactId>
             <version>5.0.9</version>
         </dependency>
 
-        <!-- ✅ Selenium Java -->
+        <!-- Selenium Java -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -60,7 +71,7 @@
 
     <build>
         <plugins>
-            <!-- ✅ Compiler Plugin -->
+            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -71,16 +82,27 @@
                 </configuration>
             </plugin>
 
-            <!-- ✅ Surefire Plugin (Important for TestNG) -->
+            <!-- Surefire Plugin (Important for TestNG) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
                 <configuration>
-                    <!-- If you use testng.xml -->
                     <suiteXmlFiles>
                         <suiteXmlFile>testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
+
+                    <!-- expose these values as system properties to tests -->
+                    <systemPropertyVariables>
+                        <maxRetry>${maxRetry}</maxRetry>
+                        <artifactsDir>${artifactsDir}</artifactsDir>
+                    </systemPropertyVariables>
+
+                    <!-- optional: forkCount / parallel settings if you need later -->
+                    <!--
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    -->
                 </configuration>
             </plugin>
         </plugins>
