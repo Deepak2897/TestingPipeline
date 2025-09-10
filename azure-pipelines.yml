@@ -1,36 +1,45 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
-- main
+  branches:
+    include:
+      - main
+      - testingbranch
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-# ✅ Update apt-get
+# update package list
 - script: sudo apt-get update
   displayName: 'Update apt-get'
 
-# ✅ Install Chrome
-- script: sudo apt-get install -y google-chrome-stable
+# install required tools
+- script: |
+    sudo apt-get install -y wget unzip
+  displayName: 'Install wget & unzip'
+
+# Install Google Chrome
+- script: |
+    sudo apt-get install -y google-chrome-stable
+    google-chrome --version
   displayName: 'Install Google Chrome'
 
-# ✅ Install ChromeDriver (matching version)
+# Install matching ChromeDriver dynamically (matches Chrome major version)
 - script: |
-    CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
-    wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
-    unzip chromedriver_linux64.zip
-    sudo mv chromedriver /usr/local/bin/
-  displayName: 'Install ChromeDriver'
+    CHROME_VER=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1 | cut -d. -f1)
+    echo "Detected Chrome major version: $CHROME_VER"
+    CHROMEDRIVER_VERSION=$(curl -sS "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_VER")
+    echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
+    wget -q "https://storage.googleapis.com/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip"
+    unzip -q chromedriver-linux64.zip
+    sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+    /usr/local/bin/chromedriver --version
+  displayName: 'Install matching ChromeDriver'
 
-# ✅ Check Java
+# Check Java
 - script: java -version
   displayName: 'Check Java Version'
 
-# ✅ Run Maven Build + Tests
+# Run Maven Build + Tests (force headless for CI)
 - task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
@@ -42,5 +51,3 @@ steps:
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
     goals: 'clean test'
     options: '-Dheadless=true'
-
-
