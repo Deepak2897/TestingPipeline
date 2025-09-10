@@ -64,4 +64,6 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
-    goals: 'clean test -Dheadless=true'
+    goals: 'clean test'
+    options: '-Dheadless=true'
+
