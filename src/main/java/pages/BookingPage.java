@@ -25,9 +25,9 @@ public class BookingPage extends BaseClass {
 		selectByVisibilityText(dropdownHotel, hotel); 
 		selectByVisibilityText(dropdownRoomType, roomType); 
 		selectByVisibilityText(dropdownRoomNos, roomNos); 
-		clickElement(btnSearch); 
-		clickElement(radioSelectHotel); 
-		clickElement(btnContinue); 
+		waitForClickable(btnSearch).click();
+		waitForClickable(radioSelectHotel).click();
+		waitForClickable(btnContinue).click();
 	
 	}
 	}

@@ -34,6 +34,6 @@ public class PaymentPage extends BaseClass {
         selectByVisibilityText(dropdownExpMonth, expMonth);
         selectByVisibilityText(dropdownExpYear, expYear);
         enterData(txtCVV, cvv);
-        clickElement(btnBookNow);
+        waitForClickable(btnBookNow).click();; 
     }
 }
